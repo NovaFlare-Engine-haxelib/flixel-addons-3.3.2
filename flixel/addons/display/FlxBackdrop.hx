@@ -6,6 +6,7 @@ import flixel.FlxSprite;
 import flixel.FlxCamera;
 import flixel.graphics.FlxGraphic;
 import flixel.graphics.frames.FlxFrame;
+import flixel.math.FlxAngle;
 import flixel.math.FlxMatrix;
 import flixel.math.FlxPoint;
 import flixel.math.FlxRect;
@@ -48,6 +49,17 @@ class FlxBackdrop extends FlxSprite
 	 * @see flixel.addons.display.FlxBackDrop.BackdropBlitMode
 	 */
 	public var blitMode:BackdropBlitMode = AUTO;
+
+	/**
+	 * The rotation of the of the backdrop, in degrees. Has no effect if `repeatAxes` is `NONE`.
+	 */
+	public var rotation(default, set):Float = 0.0;
+
+	/**
+	 * The zoom of the backdrop.
+	 * Acts like .scale.x and .scale.y but is completely unaffected by the origin.
+	**/
+	public var zoom(default, set):Float = 1.0;
 	
 	var _blitOffset:FlxPoint = FlxPoint.get();
 	var _blitGraphic:FlxGraphic = null;
@@ -62,8 +74,13 @@ class FlxBackdrop extends FlxSprite
 		spacingX:0.0,
 		spacingY:0.0,
 		repeatAxes:XY,
-		angle:0.0
+		rotation: 0.0,
+		angle:0.0,
+		zoom: 1.0
 	};
+
+	var _cosRotation:Float = 0.0;
+	var _sinRotation:Float = 0.0;
 	
 	/**
 	 * Creates an instance of the FlxBackdrop class, used to create infinitely scrolling backgrounds.
@@ -139,6 +156,35 @@ class FlxBackdrop extends FlxSprite
 		#end
 	}
 
+	/**
+	 * Modifies in-place
+	**/
+	function getZoomedView(view:FlxRect):FlxRect
+	{
+		if (zoom == 1.0)
+			return view;
+
+		final cx = view.x + view.width / 2;
+		final cy = view.y + view.height / 2;
+
+		view.x = cx - (view.width / zoom) / 2;
+		view.y = cy - (view.height / zoom) / 2;
+		view.width /= zoom;
+		view.height /= zoom;
+		return view;
+	}
+
+	/**
+	 * Modifies in-place
+	**/
+	function getRotatedView(view:FlxRect):FlxRect
+	{
+		if (rotation == 0)
+			return view;
+
+		return view.getRotatedBounds(rotation, FlxPoint.weak(view.width / 2, view.height / 2), view);
+	}
+
 	override function isOnScreen(?camera:FlxCamera):Bool
 	{
 		if (repeatAxes == XY)
@@ -151,8 +197,11 @@ class FlxBackdrop extends FlxSprite
 			camera = FlxG.camera;
 		
 		var bounds = getScreenBounds(_rect, camera);
-		if (repeatAxes.x) bounds.x = camera.viewMarginLeft;
-		if (repeatAxes.y) bounds.y = camera.viewMarginTop;
+		var view = camera.getViewMarginRect();
+		view = getRotatedView(view);
+		if (repeatAxes.x) bounds.x = view.x;
+		if (repeatAxes.y) bounds.y = view.y;
+		view.put();
 		
 		return camera.containsRect(bounds);
 	}
@@ -186,7 +235,9 @@ class FlxBackdrop extends FlxSprite
 			return super.isSimpleRenderBlit(camera);
 		
 		return (super.isSimpleRenderBlit(camera) || drawBlit)
-			&& (camera != null ? isPixelPerfectRender(camera) : pixelPerfectRender);
+			&& (camera != null ? isPixelPerfectRender(camera) : pixelPerfectRender)
+			&& (rotation == 0)
+			&& (zoom == 1.0);
 	}
 	
 	override function drawSimple(camera:FlxCamera):Void
@@ -304,7 +355,8 @@ class FlxBackdrop extends FlxSprite
 		{
 			var isColored:Bool = (alpha != 1) || (color != 0xffffff);
 			var hasColorOffsets:Bool = (colorTransform != null && colorTransform.hasRGBAOffsets());
-			drawItem = camera.startQuadBatch(graphic, isColored, hasColorOffsets, blend, antialiasing, shader);
+			drawItem = camera.startQuadBatch(graphic, isColored, hasColorOffsets, blend, antialiasing,
+				#if CODENAME_ENGINE_COMPAT shaderEnabled ? shader : null #else shader #end);
 		}
 		else
 		{
@@ -314,9 +366,51 @@ class FlxBackdrop extends FlxSprite
 		getScreenPosition(_point, camera).subtractPoint(offset);
 		var tilesX = 1;
 		var tilesY = 1;
+		var pivotX = width / 2;
+		var pivotY = height / 2;
 		if (repeatAxes != NONE)
 		{
-			final viewMargins = camera.getViewMarginRect();
+			var viewMargins = camera.getViewMarginRect();
+			if (rotation != 0 || zoom != 1.0)
+			{
+				final cameraView = viewMargins;
+				viewMargins = switch (repeatAxes)
+				{
+					case X: FlxRect.get(cameraView.x, 0, cameraView.width, height);
+					case Y: FlxRect.get(0, cameraView.y, width, cameraView.height);
+					default: cameraView;
+				}
+
+				if (viewMargins != cameraView)
+					cameraView.put();
+
+				pivotX = viewMargins.width / 2;
+				pivotY = viewMargins.height / 2;
+
+				final oldViewWidth = viewMargins.width;
+				final oldViewHeight = viewMargins.height;
+				viewMargins = getRotatedView(viewMargins);
+
+				// Match Codename Engine's one-axis backdrop coverage when rotation is active.
+				if (rotation != 0)
+				{
+					switch (repeatAxes)
+					{
+						case X:
+							final widthIncrease = width * viewMargins.width / oldViewWidth;
+							viewMargins.x -= widthIncrease / 2;
+							viewMargins.width += widthIncrease;
+						case Y:
+							final heightIncrease = height * viewMargins.height / oldViewHeight;
+							viewMargins.y -= heightIncrease / 2;
+							viewMargins.height += heightIncrease;
+						default:
+					}
+				}
+
+				viewMargins = getZoomedView(viewMargins);
+			}
+
 			final bounds = getScreenBounds(camera);
 			if (repeatAxes.x)
 			{
@@ -342,24 +436,38 @@ class FlxBackdrop extends FlxSprite
 		if (drawBlit)
 			_point.addPoint(_blitOffset);
 		
+		var isPixelPerfect = isPixelPerfectRender(camera);
+		var shouldRotate = rotation != 0 && repeatAxes != NONE;
+		var shouldZoom = zoom != 1.0 && repeatAxes != NONE;
+
 		for (tileX in 0...tilesX)
 		{
 			for (tileY in 0...tilesY)
 			{
 				_tileMatrix.copyFrom(_matrix);
-				
 				_tileMatrix.translate(_point.x + (tileSize.x * tileX), _point.y + (tileSize.y * tileY));
-				
-				if (isPixelPerfectRender(camera))
+
+				if (shouldRotate || shouldZoom)
+				{
+					_tileMatrix.translate(-pivotX, -pivotY);
+					if (shouldRotate)
+						_tileMatrix.rotateWithTrig(_cosRotation, _sinRotation);
+					if (shouldZoom)
+						_tileMatrix.scale(zoom, zoom);
+					_tileMatrix.translate(pivotX, pivotY);
+				}
+
+				if (isPixelPerfect)
 				{
 					_tileMatrix.tx = Math.floor(_tileMatrix.tx);
 					_tileMatrix.ty = Math.floor(_tileMatrix.ty);
 				}
-				
+
 				if (FlxG.renderBlit)
 				{
-					final pixels = drawBlit ? _blitGraphic.bitmap: framePixels;
-					camera.drawPixels(frame, pixels, _tileMatrix, colorTransform, blend, antialiasing, shader);
+					final pixels = drawBlit ? _blitGraphic.bitmap : framePixels;
+					camera.drawPixels(frame, pixels, _tileMatrix, colorTransform, blend, antialiasing,
+						#if CODENAME_ENGINE_COMPAT shaderEnabled ? shader : null #else shader #end);
 				}
 				else
 				{
@@ -412,12 +520,14 @@ class FlxBackdrop extends FlxSprite
 			(frameHeight + spacing.y) * scale.y
 		);
 		
-		final viewMargins = camera.getViewMarginRect();
+		var viewMargins = camera.getViewMarginRect();
 		var tilesX = 1;
 		var tilesY = 1;
 		if (repeatAxes != NONE)
 		{
 			inline function min (a:Int, b:Int):Int return a < b ? a : b;
+			viewMargins = getRotatedView(viewMargins);
+			viewMargins = getZoomedView(viewMargins);
 			switch (blitMode)
 			{
 				case AUTO | SPLIT (1):
@@ -522,7 +632,9 @@ class FlxBackdrop extends FlxSprite
 			&& _prevDrawParams.spacingX   == spacing.x
 			&& _prevDrawParams.spacingY   == spacing.y
 			&& _prevDrawParams.repeatAxes == repeatAxes
-			&& _prevDrawParams.angle      == angle;
+			&& _prevDrawParams.rotation   == rotation
+			&& _prevDrawParams.angle      == angle
+			&& _prevDrawParams.zoom       == zoom;
 	}
 	
 	inline function setDrawParams(tilesX:Int, tilesY:Int)
@@ -535,7 +647,31 @@ class FlxBackdrop extends FlxSprite
 		_prevDrawParams.spacingX   = spacing.x;
 		_prevDrawParams.spacingY   = spacing.y;
 		_prevDrawParams.repeatAxes = repeatAxes;
+		_prevDrawParams.rotation   = rotation;
 		_prevDrawParams.angle      = angle;
+		_prevDrawParams.zoom       = zoom;
+	}
+
+	function set_rotation(value:Float):Float
+	{
+		if (value != rotation)
+		{
+			rotation = value;
+			_cosRotation = Math.cos(value * FlxAngle.TO_RAD);
+			_sinRotation = Math.sin(value * FlxAngle.TO_RAD);
+			dirty = true;
+		}
+		return value;
+	}
+
+	inline function set_zoom(value:Float):Float
+	{
+		if (value != zoom)
+		{
+			zoom = value;
+			dirty = true;
+		}
+		return value;
 	}
 }
 
@@ -573,5 +709,7 @@ typedef BackdropDrawParams = {
 	spacingX:Float,
 	spacingY:Float,
 	repeatAxes:FlxAxes,
-	angle:Float
+	rotation:Float,
+	angle:Float,
+	zoom:Float
 };
