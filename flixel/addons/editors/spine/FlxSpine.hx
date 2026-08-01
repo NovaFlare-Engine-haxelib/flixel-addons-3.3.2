@@ -285,6 +285,7 @@ class FlxSpine extends FlxSprite
 					wrapper.alpha = skeleton.a * slot.a * a * alpha;
 
 					wrapper.blend = (slot.data.blendMode == spinehaxe.BlendMode.additive) ? BlendMode.ADD : null;
+					wrapper.antialiasing = antialiasing;
 					wrapper.draw();
 				}
 			}
