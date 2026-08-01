@@ -6,6 +6,9 @@ import openfl.display.BitmapData;
 import spinehaxe.atlas.AtlasPage;
 import spinehaxe.atlas.AtlasRegion;
 import spinehaxe.atlas.TextureLoader;
+#if sys
+import sys.FileSystem;
+#end
 
 class FlixelTextureLoader implements TextureLoader
 {
@@ -18,9 +21,18 @@ class FlixelTextureLoader implements TextureLoader
 
 	public function loadPage(page:AtlasPage, path:String):Void
 	{
-		var bitmapData:BitmapData = Assets.getBitmapData(prefix + path);
+		var fullPath:String = prefix + path;
+		var bitmapData:BitmapData = null;
+
+		#if sys
+		if (FileSystem.exists(fullPath) && !FileSystem.isDirectory(fullPath))
+			bitmapData = BitmapData.fromFile(fullPath);
+		#end
+
 		if (bitmapData == null)
-			throw("BitmapData not found with name: " + this.prefix + path);
+			bitmapData = Assets.getBitmapData(StringTools.replace(fullPath, "\\", "/"));
+		if (bitmapData == null)
+			throw("BitmapData not found on disk or in Assets: " + fullPath);
 		page.rendererObject = FlxG.bitmap.add(bitmapData);
 		page.width = bitmapData.width;
 		page.height = bitmapData.height;

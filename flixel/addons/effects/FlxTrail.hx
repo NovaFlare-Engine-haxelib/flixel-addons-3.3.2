@@ -55,6 +55,13 @@ class FlxTrail extends #if (flixel < version("5.7.0")) FlxSpriteGroup #else FlxS
 	public var framesEnabled:Bool = true;
 
 	/**
+	 * Callbacks for CNE mod trail compatibility.
+	 * Usage: `trail.beforeCache = char.beforeTrailCache; trail.afterCache = char.afterTrailCache;`
+	 */
+	public dynamic function beforeCache():Void {}
+	public dynamic function afterCache():Void {}
+
+	/**
 	 * Counts the frames passed.
 	 */
 	var _counter:Int = 0;
@@ -152,7 +159,9 @@ class FlxTrail extends #if (flixel < version("5.7.0")) FlxSpriteGroup #else FlxS
 		if (_counter >= delay && _trailLength >= 1)
 		{
 			_counter = 0;
+			beforeCache();
 			addTrailFrame();
+			afterCache();
 			
 			// Now we need to update the all the Trailsprites' values
 			redrawTrailSprites();

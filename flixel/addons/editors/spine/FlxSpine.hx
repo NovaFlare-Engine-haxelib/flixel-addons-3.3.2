@@ -17,7 +17,6 @@ import flixel.math.FlxRect;
 import flixel.util.FlxColor;
 import flixel.util.FlxDestroyUtil;
 import haxe.ds.ObjectMap;
-import openfl.Assets;
 import openfl.Vector;
 import openfl.display.BitmapData;
 import openfl.display.BlendMode;
@@ -60,10 +59,10 @@ class FlxSpine extends FlxSprite
 	{
 		if (DataPath.lastIndexOf("/") < 0)
 			DataPath += "/"; // append / at the end of the folder path
-		var spineAtlas:Atlas = new Atlas(Assets.getText(DataPath + AtlasName + ".atlas"), new FlixelTextureLoader(DataPath));
+		var spineAtlas:Atlas = new Atlas(sys.io.File.getContent(DataPath + AtlasName + ".atlas"), new FlixelTextureLoader(DataPath));
 		var json:SkeletonJson = new SkeletonJson(new AtlasAttachmentLoader(spineAtlas));
 		json.scale = Scale;
-		var skeletonData:SkeletonData = json.readSkeletonData(Assets.getText(DataPath + AnimationName + ".json"), AnimationName);
+		var skeletonData:SkeletonData = json.readSkeletonData(sys.io.File.getContent(DataPath + AnimationName + ".json"), AnimationName);
 		return skeletonData;
 	}
 
