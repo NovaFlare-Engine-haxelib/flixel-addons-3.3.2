@@ -421,4 +421,47 @@ class FlxNestedSprite extends FlxSprite
 	{
 		return children.length;
 	}
+
+	public function insert(position:Int, Child:FlxNestedSprite):FlxNestedSprite
+	{
+		if (Child == null)
+		{
+			FlxG.log.warn("Cannot insert a `null` object into a FlxNestedSprite.");
+			return null;
+		}
+
+		// Don't bother inserting an Child twice.
+		if (children.indexOf(Child) >= 0)
+			return Child;
+
+		// First, look if the member at position is null, so we can directly assign the Child at the position.
+		if (position < children.length && children[position] == null)
+		{
+			children[position] = Child;
+
+			preAdd(Child);
+
+			return Child;
+		}
+
+		// If we made it this far, we need to insert the Child into the group at the specified position.
+		children.insert(position, Child);
+
+		preAdd(Child);
+
+		return Child;
+	}
+
+	function preAdd(Child:FlxNestedSprite):Void
+	{
+		Child.velocity.set(0, 0);
+		Child.acceleration.set(0, 0);
+		Child.scrollFactor.copyFrom(scrollFactor);
+
+		Child.alpha = Child.relativeAlpha * alpha;
+		Child._parentRed = color.redFloat;
+		Child._parentGreen = color.greenFloat;
+		Child._parentBlue = color.blueFloat;
+		Child.color = Child.color;
+	}
 }

@@ -102,4 +102,5 @@ class FlxSkewedSprite extends FlxSprite
 			return false;
 		}
 	}
+
 }

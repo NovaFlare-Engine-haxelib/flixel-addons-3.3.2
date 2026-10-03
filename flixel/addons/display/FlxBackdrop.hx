@@ -673,6 +673,7 @@ class FlxBackdrop extends FlxSprite
 		}
 		return value;
 	}
+
 }
 
 enum BackdropBlitMode

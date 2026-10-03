@@ -529,5 +529,37 @@ class FlxRuntimeShader extends FlxGraphicsShader
 
 		return __glVertexSource = value;
 	}
+
+#if (nme || flash)
+#else
+	public function setBitmapData(name:String, value:BitmapData):Void
+	{
+		final shaderInput:ShaderInput<BitmapData> = Reflect.field(data, name);
+
+		if (shaderInput == null)
+		{
+			trace('[WARN] Shader sampler2D input "$name" not found.');
+			return;
+		}
+
+		shaderInput.input = value;
+	}
+#end
+
+#if (nme || flash)
+#else
+	public function getBitmapData(name:String):Null<BitmapData>
+	{
+		final shaderInput:ShaderInput<BitmapData> = Reflect.field(data, name);
+
+		if (shaderInput == null)
+		{
+			trace('[WARN] Shader sampler2D input "$name" not found.');
+			return null;
+		}
+
+		return shaderInput.input;
+	}
+#end
 }
 #end

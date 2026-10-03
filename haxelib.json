@@ -1,13 +1,26 @@
 {
-	"name": "flixel-addons",
-	"url" : "https://github.com/HaxeFlixel/flixel-addons",
-	"license": "MIT",
-	"tags": ["game", "openfl", "flash", "neko", "cpp", "android", "ios", "cross"],
-	"description": "flixel-addons is a set of useful, additional classes for HaxeFlixel.",
-	"version": "3.3.2",
-	"releasenote": "Fix dox, attempt 2",
-	"contributors": ["haxeflixel", "Gama11", "GeoKureli"],
-	"dependencies": {
-		"flixel": ""
-	}
+  "name": "flixel-addons",
+  "url": "https://github.com/NovaFlare-Engine-haxelib/flixel-addons-3.3.2",
+  "license": "MIT",
+  "tags": [
+    "game",
+    "openfl",
+    "flash",
+    "neko",
+    "cpp",
+    "android",
+    "ios",
+    "cross"
+  ],
+  "description": "flixel-addons is a set of useful, additional classes for HaxeFlixel.",
+  "version": "3.3.2",
+  "releasenote": "NovaFlare NF/CNE/Origin compatibility; retains the NF SDL2 backend.",
+  "contributors": [
+    "haxeflixel",
+    "Gama11",
+    "GeoKureli"
+  ],
+  "dependencies": {
+    "flixel": ""
+  }
 }

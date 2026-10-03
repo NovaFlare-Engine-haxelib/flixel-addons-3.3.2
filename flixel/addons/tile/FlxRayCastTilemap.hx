@@ -242,4 +242,9 @@ class FlxRayCastTilemap extends FlxTilemap
 	{
 		return Std.int(Index / widthInTiles) * scaledTileHeight + scaledTileHeight / 2;
 	}
+
+	public function getTileIndex(X:Int, Y:Int):Int
+	{
+		return Y * widthInTiles + X;
+	}
 }

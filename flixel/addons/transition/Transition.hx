@@ -1,5 +1,8 @@
 package flixel.addons.transition;
 
+import flixel.addons.transition.TransitionData.TransitionType;
+import flixel.addons.transition.FlxTransitionSprite.TransitionStatus;
+
 import flixel.addons.transition.TransitionData;
 import flixel.addons.transition.TransitionEffect;
 import flixel.addons.transition.TransitionFade;
@@ -89,5 +92,11 @@ class Transition extends FlxSubState
 		}
 		
 		return null;
+	}
+
+	override public function update(elapsed:Float):Void
+	{
+		super.update(elapsed);
+		_effect.update(elapsed);
 	}
 }
