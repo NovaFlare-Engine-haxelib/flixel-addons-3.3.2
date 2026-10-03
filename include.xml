@@ -6,4 +6,5 @@
 	<haxedef name="NAPE_NO_INLINE" if="neko" />
 	
 	<assets path="assets/images/transitions" rename="flixel/images/transitions" embed="true"/>
+	<haxeflag name="--macro" value="addMetadata('@:build(flixel.addons.system.macros.NFRuntimeShaderCompat.build())', 'flixel.addons.display.FlxRuntimeShader')" unless="flash || nme" />
 </project>
