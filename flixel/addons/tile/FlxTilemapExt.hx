@@ -335,7 +335,7 @@ class FlxTilemapExt extends FlxTilemap
 	 * @param   position            Optional, specify a custom position for the tilemap (useful for overlapsAt()-type functionality).
 	 * @return  Whether there were overlaps, or if a callback was specified, whatever the return value of the callback was.
 	 */
-	override public function overlapsWithCallback(object:FlxObject, ?callback:FlxObject->FlxObject->Bool, flipCallbackParams:Bool = false,
+	override function overlapsWithCallback(object:FlxObject, ?callback:FlxObject->FlxObject->Bool, flipCallbackParams:Bool = false,
 			?position:FlxPoint):Bool
 	{
 		var results:Bool = false;

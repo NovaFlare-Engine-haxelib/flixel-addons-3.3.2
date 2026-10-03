@@ -88,13 +88,13 @@ class FlxTiledSprite extends FlxStrip
 			loadGraphic(graphic);
 	}
 	
-	override public function destroy():Void
+	override function destroy():Void
 	{
 		renderSprite = FlxDestroyUtil.destroy(renderSprite);
 		super.destroy();
 	}
 	
-	override public function loadGraphic(graphic, animated = false, width = 0, height = 0, unique = false, ?key:String):FlxSprite
+	override function loadGraphic(graphic, animated = false, width = 0, height = 0, unique = false, ?key:String):FlxSprite
 	{
 		this.graphic = FlxG.bitmap.add(graphic);
 		return this;
@@ -138,7 +138,7 @@ class FlxTiledSprite extends FlxStrip
 		regen = false;
 	}
 	
-	override public function draw():Void
+	override function draw():Void
 	{
 		if (regen)
 			regenGraphic();

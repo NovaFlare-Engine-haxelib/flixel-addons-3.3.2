@@ -1,7 +1,7 @@
-# NovaFlare compatibility
+# NovaFlare additive compatibility interfaces
 
-Adds bitmap input access to FlxRuntimeShader, nested-sprite insertion, and compatibility members. Backdrop/SkewedSprite inherit NF's shaderEnabled property instead of redeclaring it.
+Restores the original tiled sprite lifecycle/drawing, tilemap overlap callback and transition state lifecycle. Runtime shader sampler methods and subclass override metadata are additive interfaces only. Existing runtime methods are not replaced.
 
-The Lime include.xml installs an idempotent build macro for projects that override the original Shader/FlxRuntimeShader source files. It supplies only missing compatibility fields and preserves existing implementation logic. Direct haxe users with overrides can add the corresponding NFShaderCompat/NFRuntimeShaderCompat build metadata explicitly.
+The earlier broad integration changed existing behavior and is superseded by this repair. Compatibility additions must preserve existing NF calls, defaults and update/render/audio paths. Unsupported additions may return a neutral result instead of replacing a legacy implementation.
 
-Upstream licenses and contributor notices are preserved.
+Windows x64 and Android ARMv7/ARM64/x86_64 native Lime binaries have been rebuilt. The full game targets Windows x64 and Android ARM64. Visual gameplay acceptance is performed manually by the project owner.

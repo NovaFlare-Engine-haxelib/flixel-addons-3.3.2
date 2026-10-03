@@ -70,7 +70,7 @@ class FlxTransitionableState extends FlxState
 		super();
 	}
 
-	override public function destroy():Void
+	override function destroy():Void
 	{
 		super.destroy();
 		transIn = null;
@@ -78,7 +78,7 @@ class FlxTransitionableState extends FlxState
 		_onExit = null;
 	}
 
-	override public function create():Void
+	override function create():Void
 	{
 		super.create();
 		transitionIn();
