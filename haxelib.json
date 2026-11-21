@@ -13,8 +13,8 @@
     "cross"
   ],
   "description": "flixel-addons is a set of useful, additional classes for HaxeFlixel.",
-  "version": "3.3.2",
-  "releasenote": "NovaFlare NF/CNE/Origin compatibility; retains the NF SDL2 backend.",
+  "version": "4.0.1",
+  "releasenote": "Origin 0.9 update with NovaFlare compatibility",
   "contributors": [
     "haxeflixel",
     "Gama11",

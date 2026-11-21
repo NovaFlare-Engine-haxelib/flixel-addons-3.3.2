@@ -229,35 +229,35 @@ class FlxSlider extends #if (flixel < version("5.7.0")) FlxSpriteGroup #else Flx
 		body = new FlxSprite(offset.x, offset.y);
 		var colorKey:String = "slider:W=" + _width + "H=" + _height + "C=" + _color.toHexString() + "T=" + _thickness;
 		body.makeGraphic(_width, _height, 0, false, colorKey);
-		body.scrollFactor.set();
+		body.scrollFactor.zero();
 		FlxSpriteUtil.drawLine(body, 0, _height / 2, _width, _height / 2, {color: _color, thickness: _thickness});
 
 		handle = new FlxSprite(offset.x, offset.y);
 		handle.makeGraphic(_thickness, _height, _handleColor);
-		handle.scrollFactor.set();
+		handle.scrollFactor.zero();
 
 		// Creating the texts
 		nameLabel = new FlxText(offset.x, 0, _width, varString);
 		nameLabel.alignment = "center";
 		nameLabel.color = _color;
-		nameLabel.scrollFactor.set();
+		nameLabel.scrollFactor.zero();
 
 		var textOffset:Float = _height + offset.y + 3;
 
 		valueLabel = new FlxText(offset.x, textOffset, _width);
 		valueLabel.alignment = "center";
 		valueLabel.color = _handleColor;
-		valueLabel.scrollFactor.set();
+		valueLabel.scrollFactor.zero();
 
 		minLabel = new FlxText(-50 + offset.x, textOffset, 100, Std.string(minValue));
 		minLabel.alignment = "center";
 		minLabel.color = _color;
-		minLabel.scrollFactor.set();
+		minLabel.scrollFactor.zero();
 
 		maxLabel = new FlxText(_width - 50 + offset.x, textOffset, 100, Std.string(maxValue));
 		maxLabel.alignment = "center";
 		maxLabel.color = _color;
-		maxLabel.scrollFactor.set();
+		maxLabel.scrollFactor.zero();
 
 		// Add all the objects
 		add(body);
@@ -271,17 +271,14 @@ class FlxSlider extends #if (flixel < version("5.7.0")) FlxSpriteGroup #else Flx
 	override public function update(elapsed:Float):Void
 	{
 		// Clicking and sound logic
-		#if (flixel >= version("5.7.0"))
-		final camera = getCameras()[0];// else use this.camera
-		#end
-		#if (flixel >= version("5.9.0"))
-		final viewX = FlxG.mouse.viewX;
-		final viewY = FlxG.mouse.viewY;
+		#if (flixel >= "5.7.0")
+		final cam = getDefaultCamera();
 		#else
-		final viewX = FlxG.mouse.screenX;
-		final viewY = FlxG.mouse.screenY;
+		final cam = this.camera;
 		#end
-		if (FlxMath.pointInFlxRect(viewX, viewY, _bounds))
+		final mousePosition = FlxG.mouse.getViewPosition(cam);
+		
+		if (FlxMath.pointInFlxRect(mousePosition.x, mousePosition.y, _bounds))
 		{
 			if (hoverAlpha != 1)
 			{
@@ -299,7 +296,7 @@ class FlxSlider extends #if (flixel < version("5.7.0")) FlxSpriteGroup #else Flx
 
 			if (FlxG.mouse.pressed)
 			{
-				handle.x = viewX;
+				handle.x = mousePosition.x;
 				updateValue();
 
 				#if FLX_SOUND_SYSTEM
@@ -326,7 +323,7 @@ class FlxSlider extends #if (flixel < version("5.7.0")) FlxSpriteGroup #else Flx
 		}
 
 		// Update the target value whenever the slider is being used
-		if ((FlxG.mouse.pressed) && (FlxMath.mouseInFlxRect(false, _bounds)))
+		if ((FlxG.mouse.pressed) && (FlxMath.pointInFlxRect(mousePosition.x, mousePosition.y, _bounds)))
 		{
 			updateValue();
 		}
@@ -345,6 +342,9 @@ class FlxSlider extends #if (flixel < version("5.7.0")) FlxSpriteGroup #else Flx
 
 		// Finally, update the valueLabel
 		valueLabel.text = Std.string(FlxMath.roundDecimal(value, decimals));
+
+		mousePosition.put();
+
 
 		super.update(elapsed);
 	}
